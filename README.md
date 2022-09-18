@@ -1,1 +1,6 @@
-# NRF24L01-analyzer
+
+  # NRF24L01
+
+Decoder for Nordic Semiconductor NRF24L01 transceivers
+
+  
