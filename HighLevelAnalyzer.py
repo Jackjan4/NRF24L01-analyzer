@@ -7,7 +7,7 @@ from saleae.analyzers import HighLevelAnalyzer, AnalyzerFrame, StringSetting, Nu
 # High level analyzers must subclass the HighLevelAnalyzer class.
 class Hla(HighLevelAnalyzer):
 
-    # 0 = NO FOLLOWING | 1 = READ | 2 = WRITE
+    # 0 = NO FOLLOWING | 1 = READ_SINGLE_BYTE | 2 = WRITE_SINGLE_BYTE | 3 = READ_UNTIL_STOP | 4 = WRITE_UNTIL_STOP
     following_type = 0
 
     register_map = {
@@ -16,7 +16,7 @@ class Hla(HighLevelAnalyzer):
         0x02: "EN_RXADDR",
         0x03: "SETUP_AW",
         0x04: "SETUP_RETR",
-        0x05: "REF_CH",
+        0x05: "RF_CH",
         0x06: "RF_SETUP",
         0x07: "STATUS",
         0x08: "OBSERVE_TX",
@@ -65,6 +65,12 @@ class Hla(HighLevelAnalyzer):
         'flush_rx': {
             'format': 'Flush RX FIFO'
         },
+        'reuse_tx_pl': {
+            'format': 'Reuse TX PL'
+        },
+        'read_rx_pl_wid': {
+            'format': 'Read RX payload width'
+        },
         'debug': {
             'format': 'Debug message: {{data.message}}'
         }
@@ -87,6 +93,9 @@ class Hla(HighLevelAnalyzer):
 
         The type and data values in `frame` will depend on the input analyzer.
         '''
+        if (frame.type == "enable"):
+            self.following_type = 0
+            
         if (frame.type == "result"):
         
             mosi_bytes = frame.data["mosi"]
@@ -102,10 +111,13 @@ class Hla(HighLevelAnalyzer):
 
             if (self.following_type == 2):
                 self.following_type = 0
-                
                 return AnalyzerFrame('following', frame.start_time, frame.end_time, {'value_hex': format(mosi_int,'02X'), 'value_bin': format(mosi_int,'08b')})
 
-            
+            if (self.following_type == 3):
+                return AnalyzerFrame('following', frame.start_time, frame.end_time, {'value_hex': format(miso_int,'02X'), 'value_bin': format(miso_int,'08b')})
+
+            if (self.following_type == 4):
+                return AnalyzerFrame('following', frame.start_time, frame.end_time, {'value_hex': format(mosi_int,'02X'), 'value_bin': format(mosi_int,'08b')})
 
             # Check which NRF24L01 command is being executed
 
@@ -120,15 +132,17 @@ class Hla(HighLevelAnalyzer):
             if ((mosi_int & 0b11100000) == 0b00100000):
                 register_masked = mosi_int & 0b00011111
                 register_name = self.register_map[register_masked]
-                self.following_type = 2
+                self.following_type = 4
                 return AnalyzerFrame('write_register', frame.start_time, frame.end_time, {'register': register_name})
 
             # Read RX-payload R_RX_PAYLOAD
             if (mosi_int == 0b01100001):
+                self.following_type = 3
                 return AnalyzerFrame('read_rx_payload', frame.start_time, frame.end_time)
 
             # Write TX-payload W_TX_PAYLOAD
             if (mosi_int == 0b10100000):
+                self.following_type = 4
                 return AnalyzerFrame('write_tx_payload', frame.start_time, frame.end_time)
 
             # Flush TX FIFO FLUSH_TX
@@ -139,4 +153,11 @@ class Hla(HighLevelAnalyzer):
             if (mosi_int == 0b11100010):
                 return AnalyzerFrame('flush_rx', frame.start_time, frame.end_time)
 
-            if ()
+            # Reuse TX Payload REUSE_TX_PL
+            if (mosi_int == 0b11100011):
+                return AnalyzerFrame('reuse_tx_pl', frame.start_time, frame.end_time)
+
+            # Read RX payload width
+            if (mosi_int == 0b01100000):
+                self.following_type = 1
+                return AnalyzerFrame('read_rx_pl_wid', frame.start_time, frame.end_time)
