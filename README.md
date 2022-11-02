@@ -1,6 +1,6 @@
 
-  # NRF24L01
+  # NRF24L01+
 
-Decoder for Nordic Semiconductor NRF24L01 transceivers
+Decoder for Nordic Semiconductor NRF24L01+ transceivers for Saleae Logic
 
   

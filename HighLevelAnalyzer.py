@@ -1,4 +1,5 @@
-# High Level Analyzer
+# NRF24L01+ Decoder by Jan-Philipp Roslan (https://github.com/Jackjan4)
+# This is a High Level Analyzer
 # For more information and documentation, please go to https://support.saleae.com/extensions/high-level-analyzer-extensions
 
 from saleae.analyzers import HighLevelAnalyzer, AnalyzerFrame, StringSetting, NumberSetting, ChoicesSetting
