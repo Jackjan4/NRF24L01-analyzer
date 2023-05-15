@@ -1,8 +1,8 @@
 {
-  "name": "NRF24L01+",
+  "name": "NRF24L01(+)",
   "apiVersion": "1.0.0",
   "author": "Jan-Philipp Roslan",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Decoder for Nordic Semiconductor NRF24L01+ transceivers",
   "extensions": {
     "NRF24L01": {

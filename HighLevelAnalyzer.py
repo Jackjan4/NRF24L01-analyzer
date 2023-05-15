@@ -72,6 +72,9 @@ class Hla(HighLevelAnalyzer):
         'read_rx_pl_wid': {
             'format': 'Read RX payload width'
         },
+        'nop': {
+            'format': 'NOP'
+        },
         'debug': {
             'format': 'Debug message: {{data.message}}'
         }
@@ -120,7 +123,8 @@ class Hla(HighLevelAnalyzer):
             if (self.following_type == 4):
                 return AnalyzerFrame('following', frame.start_time, frame.end_time, {'value_hex': format(mosi_int,'02X'), 'value_bin': format(mosi_int,'08b')})
 
-            # Check which NRF24L01 command is being executed
+
+            ## Check which NRF24L01 command is being executed
 
             # Read Register R_REGISTER
             if ((mosi_int & 0b11100000) == 0b000000000):
@@ -162,3 +166,7 @@ class Hla(HighLevelAnalyzer):
             if (mosi_int == 0b01100000):
                 self.following_type = 1
                 return AnalyzerFrame('read_rx_pl_wid', frame.start_time, frame.end_time)
+				
+			# NOP
+			if (mosi_int == 0b11111111):
+				return AnalyzerFrame('nop', frame.start_time, frame.end_time)
